@@ -16,12 +16,12 @@ public class PanelsManager : MonoBehaviour
 
     private void Start()
     {
-        ConnectionController.OnConnected += (sender, args) =>
+        SerialCommunication.Instance.OnConnected += (sender, args) =>
         {
             SetPanel(PanelType.Main);
         };
 
-        ConnectionController.OnDisconnected += (sender, args) =>
+        SerialCommunication.Instance.OnDisconnected += (sender, args) =>
         {
             SetPanel(PanelType.Connect);
         };
