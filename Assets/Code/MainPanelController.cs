@@ -17,7 +17,7 @@ public class MainPanelController : MonoBehaviour
     [Header("Firmware")]
     [SerializeField] private Button m_DownloadButton;
 
-    private StringBuilder _csvBuilder = new();
+    private readonly StringBuilder _csvBuilder = new();
     private StreamWriter _writer;
     private bool _isDownloading = false;
     private int _count = -1;
@@ -30,6 +30,14 @@ public class MainPanelController : MonoBehaviour
         {
             LoadPortName();
             UpdateDownloadButton();
+        };
+
+        SerialCommunication.Instance.OnDisconnected += (sender, args) =>
+        {
+            if (_isDownloading)
+            {
+                FinishDownloading();
+            }
         };
 
         SerialCommunication.Instance.OnRead += (sender, args) =>
@@ -58,7 +66,7 @@ public class MainPanelController : MonoBehaviour
                     }
                     else
                     {
-                        if (data.Length != 24)
+                        if (data.Length != 25)
                         {
                             FinishDownloading();
 
@@ -91,6 +99,7 @@ public class MainPanelController : MonoBehaviour
                         WriteFileValue(double.Parse(data[21]));
                         WriteFileValue(double.Parse(data[22]));
                         WriteFileValue(float.Parse(data[23]));
+                        WriteFileValue(int.Parse(data[24]));
 
                         _writer.WriteLine(_csvBuilder);
                         _csvBuilder.Clear();
@@ -138,7 +147,7 @@ public class MainPanelController : MonoBehaviour
     private void UpdateDownloadButton()
     {
         m_DownloadButton.enabled = !_isDownloading;
-        m_DownloadButton.transform.Find("Fill").GetComponent<Image>().color = new Color(0.3921568f, 0.8024775f, 1.0f);
+        m_DownloadButton.transform.Find("Fill").GetComponent<Image>().color = !_isDownloading ? new Color(0.3921568f, 1.0f, 0.4287225f) : new Color(0.3921568f, 0.8024775f, 1.0f);
         m_DownloadButton.transform.Find("Fill").GetComponent<Image>().fillAmount = !_isDownloading ? 1 : (float)_currentCount / _count;
     }
 
@@ -184,10 +193,10 @@ public class MainPanelController : MonoBehaviour
         {
             var result = new List<string>();
 
-            if (msg.StartsWith("/*") && msg.EndsWith("*/\n"))
+            if (msg.StartsWith("/*") && msg.EndsWith("*/"))
             {
                 msg = msg.Remove(0, 2);
-                msg = msg.Remove(msg.Length - 3, 3);
+                msg = msg.Remove(msg.Length - 2, 2);
 
                 var data = msg.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
