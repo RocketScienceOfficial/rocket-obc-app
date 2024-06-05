@@ -27,6 +27,8 @@ public class SerialCommunication : MonoBehaviour
     private readonly object _serialReadQueueLock = new();
     private bool _closePort;
     private readonly object _closePortLock = new();
+    private bool _disconnectPort;
+    private readonly object _disconnectPortLock = new();
     private SerialPort _currentSerialPort;
     private Thread _serialReadThread;
 
@@ -54,23 +56,33 @@ public class SerialCommunication : MonoBehaviour
         {
             if (_closePort)
             {
-                Disconnect();
+                BeginDisconnect();
 
                 _closePort = false;
+            }
+        }
+
+        lock (_disconnectPortLock)
+        {
+            if (_disconnectPort)
+            {
+                EndDisconnect();
+
+                _disconnectPort = false;
             }
         }
     }
 
     private void OnApplicationQuit()
     {
-        Disconnect();
+        BeginDisconnect();
     }
 
     private void OnApplicationPause(bool pause)
     {
         if (pause)
         {
-            Disconnect();
+            BeginDisconnect();
         }
     }
 
@@ -109,20 +121,33 @@ public class SerialCommunication : MonoBehaviour
         }
     }
 
-    private void Disconnect()
+    private void BeginDisconnect()
     {
         if (IsConnected)
         {
-            _currentSerialPort.Close();
-            _currentSerialPort = null;
+            var closeThread = new Thread(() =>
+            {
+                _currentSerialPort.Close();
+                _currentSerialPort = null;
 
-            _serialReadThread.Join();
-            _serialReadThread = null;
+                lock (_disconnectPortLock)
+                {
+                    _disconnectPort = true;
+                }
+            });
 
-            OnDisconnected?.Invoke(this, EventArgs.Empty);
-
-            print("COM Port Disconnected!");
+            closeThread.Start();
         }
+    }
+
+    private void EndDisconnect()
+    {
+        _serialReadThread.Join();
+        _serialReadThread = null;
+
+        OnDisconnected?.Invoke(this, EventArgs.Empty);
+
+        print("COM Port Disconnected!");
     }
 
 
