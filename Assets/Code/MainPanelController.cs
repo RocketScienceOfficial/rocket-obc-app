@@ -36,6 +36,8 @@ public class MainPanelController : MonoBehaviour
         {
             if (_isDownloading)
             {
+                print("Disconnected while downloading. Aborting...");
+
                 FinishDownloading();
             }
         };
@@ -55,7 +57,18 @@ public class MainPanelController : MonoBehaviour
                 {
                     _count = int.Parse(data[0]);
 
-                    UpdateDownloadButton();
+                    print("New count is: " + _count);
+
+                    if (_count == 0)
+                    {
+                        print("Received count is 0. Aborting...");
+
+                        FinishDownloading();
+                    }
+                    else
+                    {
+                        UpdateDownloadButton();
+                    }
                 }
                 else if (data.Length == 25)
                 {
@@ -92,6 +105,8 @@ public class MainPanelController : MonoBehaviour
 
                     if (_count == _currentCount)
                     {
+                        print("Received all frames!");
+
                         FinishDownloading();
                     }
                     else
@@ -101,6 +116,8 @@ public class MainPanelController : MonoBehaviour
                 }
                 else
                 {
+                    print("Invalid data length: " + data.Length);
+
                     FinishDownloading();
                 }
             }
@@ -126,7 +143,7 @@ public class MainPanelController : MonoBehaviour
         m_DownloadButton.transform.Find("Fill").GetComponent<Image>().fillAmount = !_isDownloading ? 1 : (float)_currentCount / Mathf.Max(1, _count);
 
         m_DownloadButton.transform.Find("Progress Text").gameObject.SetActive(_isDownloading);
-        m_DownloadButton.transform.Find("Progress Text").GetComponent<TextMeshProUGUI>().SetText(_isDownloading ? $"{_currentCount}/{_count}" : "");
+        m_DownloadButton.transform.Find("Progress Text").GetComponent<TextMeshProUGUI>().SetText(_isDownloading ? $"{_currentCount} / {_count}" : "");
     }
 
 
