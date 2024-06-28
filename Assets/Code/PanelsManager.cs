@@ -9,6 +9,8 @@ public enum PanelType
     Download,
     Clear,
     Recovery,
+    Config,
+    Igniters,
 }
 
 public class PanelsManager : MonoBehaviour
@@ -20,6 +22,8 @@ public class PanelsManager : MonoBehaviour
     [SerializeField] private GameObject m_DownloadPanel;
     [SerializeField] private GameObject m_ClearPanel;
     [SerializeField] private GameObject m_RecoveryPanel;
+    [SerializeField] private GameObject m_ConfigPanel;
+    [SerializeField] private GameObject m_IgnitersPanel;
 
     private void Awake()
     {
@@ -51,6 +55,8 @@ public class PanelsManager : MonoBehaviour
         SetPanelActive(PanelType.Download, false);
         SetPanelActive(PanelType.Clear, false);
         SetPanelActive(PanelType.Recovery, false);
+        SetPanelActive(PanelType.Config, false);
+        SetPanelActive(PanelType.Igniters, false);
     }
 
     public void SetPanelActive(PanelType panel, bool active)
@@ -71,6 +77,12 @@ public class PanelsManager : MonoBehaviour
                 break;
             case PanelType.Recovery:
                 m_RecoveryPanel.SetActive(active);
+                break;
+            case PanelType.Config:
+                m_ConfigPanel.SetActive(active);
+                break;
+            case PanelType.Igniters:
+                m_IgnitersPanel.SetActive(active);
                 break;
             default:
                 break;

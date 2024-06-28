@@ -48,7 +48,10 @@ public class SerialCommunication : MonoBehaviour
             {
                 var data = _serialReadQueue.Dequeue();
 
-                OnRead?.Invoke(this, new SerialCommunicationOnReadEventArgs { Data = data });
+                if (!string.IsNullOrEmpty(data))
+                {
+                    OnRead?.Invoke(this, new SerialCommunicationOnReadEventArgs { Data = data });
+                }
             }
         }
 
@@ -186,7 +189,7 @@ public class SerialCommunication : MonoBehaviour
         if (IsConnected)
         {
             _currentSerialPort.WriteLine(data + "\r");
-
+            
             print("Written to serial port: " + data);
         }
     }

@@ -27,7 +27,7 @@ public class RecoveryController : MonoBehaviour
 
             PanelsManager.Instance.SetPanelActive(PanelType.Recovery, true);
 
-            SerialCommunication.Instance.SerialPortWrite("data-recovery-start");
+            SerialCommunication.Instance.SerialPortWrite("\\data-recovery-start");
         });
 
         SerialCommunication.Instance.OnRead += (sender, args) =>
@@ -101,7 +101,7 @@ public class RecoveryController : MonoBehaviour
 
                     var ignFlags = int.Parse(data[25]);
 
-                    for (int i = 7; i >= 0; i--)
+                    for (int i = 0; i < 8; i++)
                     {
                         var flag = (ignFlags & (1 << i)) >> i;
 
