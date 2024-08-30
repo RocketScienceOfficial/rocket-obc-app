@@ -100,12 +100,13 @@ public class DownloadController : MonoBehaviour
                     _file.WriteFileValue(float.Parse(data[18]));
                     _file.WriteFileValue(int.Parse(data[19]));
                     _file.WriteFileValue(float.Parse(data[20]));
-                    _file.WriteFileValue(double.Parse(data[21]));
+                    _file.WriteFileValue(float.Parse(data[21]));
                     _file.WriteFileValue(double.Parse(data[22]));
-                    _file.WriteFileValue(float.Parse(data[23]));
-                    _file.WriteFileValue(int.Parse(data[24]));
+                    _file.WriteFileValue(double.Parse(data[23]));
+                    _file.WriteFileValue(float.Parse(data[24]));
+                    _file.WriteFileValue(int.Parse(data[25]));
 
-                    var ignFlags = int.Parse(data[25]);
+                    var ignFlags = int.Parse(data[26]);
 
                     for (int i = 0; i < 8; i++)
                     {
