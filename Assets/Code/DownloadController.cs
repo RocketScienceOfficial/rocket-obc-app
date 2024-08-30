@@ -77,7 +77,7 @@ public class DownloadController : MonoBehaviour
                         UpdateProgress();
                     }
                 }
-                else if (data.Count == 26)
+                else if (data.Count == 27)
                 {
                     _file.WriteFileValue(uint.Parse(data[0]));
                     _file.WriteFileValue(float.Parse(data[1]));
@@ -119,9 +119,9 @@ public class DownloadController : MonoBehaviour
 
                     var currentKMLData = new KMLData()
                     {
-                        lat = double.Parse(data[21]),
-                        lon = double.Parse(data[22]),
-                        alt = float.Parse(data[23]),
+                        lat = double.Parse(data[22]),
+                        lon = double.Parse(data[23]),
+                        alt = float.Parse(data[21]),
                         altDiv = 1,
                     };
 
@@ -183,7 +183,7 @@ public class DownloadController : MonoBehaviour
     {
         _file.Close();
 
-        var kmlStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\r\n  <Document>\r\n    <Style id=\"s1\">\r\n      <LineStyle>\r\n        <color>ffffffff</color>\r\n        <width>2.5</width>\r\n      </LineStyle>\r\n    </Style>\r\n    <Style id=\"s2\">\r\n      <LineStyle>\r\n        <color>00000000</color>\r\n        <width>2.5</width>\r\n      </LineStyle>\r\n      <PolyStyle>\r\n        <color>7f171717</color>\r\n      </PolyStyle>\r\n    </Style>\r\n    <Placemark>\r\n      <styleUrl>#s1</styleUrl>\r\n      <LineString>\r\n        <extrude>0</extrude>\r\n        <altitudeMode>absolute</altitudeMode>\r\n        <coordinates>{DATA}</coordinates>\r\n      </LineString>\r\n    </Placemark>\r\n    <Placemark>\r\n      <styleUrl>#s2</styleUrl>\r\n      <LineString>\r\n        <extrude>1</extrude>\r\n        <altitudeMode>absolute</altitudeMode>\r\n        <coordinates>{DATA}</coordinates>\r\n      </LineString>\r\n    </Placemark>\r\n  </Document>\r\n</kml>";
+        var kmlStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\r\n  <Document>\r\n    <Style id=\"s1\">\r\n      <LineStyle>\r\n        <color>ffffffff</color>\r\n        <width>2.5</width>\r\n      </LineStyle>\r\n    </Style>\r\n    <Style id=\"s2\">\r\n      <LineStyle>\r\n        <color>00000000</color>\r\n        <width>2.5</width>\r\n      </LineStyle>\r\n      <PolyStyle>\r\n        <color>7f171717</color>\r\n      </PolyStyle>\r\n    </Style>\r\n    <Placemark>\r\n      <styleUrl>#s1</styleUrl>\r\n      <LineString>\r\n        <extrude>0</extrude>\r\n        <altitudeMode>relativeToGround</altitudeMode>\r\n        <coordinates>{DATA}</coordinates>\r\n      </LineString>\r\n    </Placemark>\r\n    <Placemark>\r\n      <styleUrl>#s2</styleUrl>\r\n      <LineString>\r\n        <extrude>1</extrude>\r\n        <altitudeMode>relativeToGround</altitudeMode>\r\n        <coordinates>{DATA}</coordinates>\r\n      </LineString>\r\n    </Placemark>\r\n  </Document>\r\n</kml>";
         var newKml = kmlStr.Replace("{DATA}", string.Join("", _kmlData.Select(d => $"\r\n            {d.lon.ToString().Replace(',', '.')},{d.lat.ToString().Replace(',', '.')},{d.alt.ToString().Replace(',', '.')}")));
 
         using (var kmlFile = new StreamWriter($"{DOWNLOADS_DIR}/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml"))
