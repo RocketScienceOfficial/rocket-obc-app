@@ -12,6 +12,7 @@ public class RecoveryController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_ProgressText;
 
     private readonly CSVFile _file = new();
+    private readonly KMLFile _kml = new();
     private bool _isRecovering;
     private int _currentCount;
 
@@ -22,6 +23,7 @@ public class RecoveryController : MonoBehaviour
             _isRecovering = true;
 
             _file.Open($"Recovery/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
+            _kml.Open($"Recovery/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
 
             UpdateProgress();
 
@@ -71,7 +73,7 @@ public class RecoveryController : MonoBehaviour
                     return;
                 }
 
-                if (data.Count == 26)
+                if (data.Count == 27)
                 {
                     _file.WriteFileValue(uint.Parse(data[0]));
                     _file.WriteFileValue(float.Parse(data[1]));
@@ -94,12 +96,13 @@ public class RecoveryController : MonoBehaviour
                     _file.WriteFileValue(float.Parse(data[18]));
                     _file.WriteFileValue(int.Parse(data[19]));
                     _file.WriteFileValue(float.Parse(data[20]));
-                    _file.WriteFileValue(double.Parse(data[21]));
+                    _file.WriteFileValue(float.Parse(data[21]));
                     _file.WriteFileValue(double.Parse(data[22]));
-                    _file.WriteFileValue(float.Parse(data[23]));
-                    _file.WriteFileValue(int.Parse(data[24]));
+                    _file.WriteFileValue(double.Parse(data[23]));
+                    _file.WriteFileValue(float.Parse(data[24]));
+                    _file.WriteFileValue(int.Parse(data[25]));
 
-                    var ignFlags = int.Parse(data[25]);
+                    var ignFlags = int.Parse(data[26]);
 
                     for (int i = 0; i < 8; i++)
                     {
@@ -109,6 +112,8 @@ public class RecoveryController : MonoBehaviour
                     }
 
                     _file.EndLine();
+
+                    _kml.AddRecord(double.Parse(data[22]), double.Parse(data[23]), float.Parse(data[21]));
 
                     _currentCount++;
 
@@ -137,6 +142,7 @@ public class RecoveryController : MonoBehaviour
     private void FinishRecovering()
     {
         _file.Close();
+        _kml.Close();
 
         _isRecovering = false;
         _currentCount = 0;

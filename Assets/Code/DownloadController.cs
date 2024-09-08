@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -9,14 +8,12 @@ using UnityEngine.UI;
 
 public class DownloadController : MonoBehaviour
 {
-    private const string DOWNLOADS_DIR = "Downloads";
-
     [SerializeField] private Button m_DownloadButton;
     [SerializeField] private Image m_ProgressFill;
     [SerializeField] private TextMeshProUGUI m_ProgressText;
 
     private readonly CSVFile _file = new();
-    private readonly List<KMLData> _kmlData = new();
+    private readonly KMLFile _kml = new();
     private bool _isDownloading;
     private int _currentCount;
     private int _totalCount;
@@ -27,7 +24,8 @@ public class DownloadController : MonoBehaviour
         {
             _isDownloading = true;
 
-            _file.Open($"{DOWNLOADS_DIR}/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
+            _file.Open($"Downloads/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
+            _kml.Open($"Downloads/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
 
             UpdateProgress();
 
@@ -117,34 +115,7 @@ public class DownloadController : MonoBehaviour
 
                     _file.EndLine();
 
-                    var currentKMLData = new KMLData()
-                    {
-                        lat = double.Parse(data[22]),
-                        lon = double.Parse(data[23]),
-                        alt = float.Parse(data[21]),
-                        altDiv = 1,
-                    };
-
-                    if (_kmlData.Count > 0)
-                    {
-                        var lastData = _kmlData[^1];
-
-                        if (lastData.lat == currentKMLData.lat && lastData.lon == currentKMLData.lon)
-                        {
-                            lastData.alt = (lastData.alt * lastData.altDiv + currentKMLData.alt) / (lastData.altDiv + 1);
-                            lastData.altDiv++;
-
-                            _kmlData[^1] = lastData;
-                        }
-                        else
-                        {
-                            _kmlData.Add(currentKMLData);
-                        }
-                    }
-                    else
-                    {
-                        _kmlData.Add(currentKMLData);
-                    }
+                    _kml.AddRecord(double.Parse(data[22]), double.Parse(data[23]), float.Parse(data[21]));
 
                     _currentCount++;
 
@@ -182,16 +153,7 @@ public class DownloadController : MonoBehaviour
     private void FinishDownloading()
     {
         _file.Close();
-
-        var kmlStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\r\n  <Document>\r\n    <Style id=\"s1\">\r\n      <LineStyle>\r\n        <color>ffffffff</color>\r\n        <width>2.5</width>\r\n      </LineStyle>\r\n    </Style>\r\n    <Style id=\"s2\">\r\n      <LineStyle>\r\n        <color>00000000</color>\r\n        <width>2.5</width>\r\n      </LineStyle>\r\n      <PolyStyle>\r\n        <color>7f171717</color>\r\n      </PolyStyle>\r\n    </Style>\r\n    <Placemark>\r\n      <styleUrl>#s1</styleUrl>\r\n      <LineString>\r\n        <extrude>0</extrude>\r\n        <altitudeMode>relativeToGround</altitudeMode>\r\n        <coordinates>{DATA}</coordinates>\r\n      </LineString>\r\n    </Placemark>\r\n    <Placemark>\r\n      <styleUrl>#s2</styleUrl>\r\n      <LineString>\r\n        <extrude>1</extrude>\r\n        <altitudeMode>relativeToGround</altitudeMode>\r\n        <coordinates>{DATA}</coordinates>\r\n      </LineString>\r\n    </Placemark>\r\n  </Document>\r\n</kml>";
-        var newKml = kmlStr.Replace("{DATA}", string.Join("", _kmlData.Select(d => $"\r\n            {d.lon.ToString().Replace(',', '.')},{d.lat.ToString().Replace(',', '.')},{d.alt.ToString().Replace(',', '.')}")));
-
-        using (var kmlFile = new StreamWriter($"{DOWNLOADS_DIR}/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml"))
-        {
-            kmlFile.Write(newKml);
-        }
-
-        _kmlData.Clear();
+        _kml.Close();
 
         _isDownloading = false;
         _currentCount = 0;
@@ -206,13 +168,5 @@ public class DownloadController : MonoBehaviour
     {
         m_ProgressFill.fillAmount = _isDownloading ? (float)_currentCount / Mathf.Max(_totalCount, 1) : 0;
         m_ProgressText.SetText(_totalCount != 0 ? $"{_currentCount} / {_totalCount}" : "Loading...");
-    }
-
-    private struct KMLData
-    {
-        public double lat;
-        public double lon;
-        public float alt;
-        public int altDiv;
     }
 }
