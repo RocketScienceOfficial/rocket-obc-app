@@ -12,7 +12,7 @@ public class DevConsoleController : MonoBehaviour
     [SerializeField] private GameObject m_LogObject;
     [SerializeField] private Button m_CopyButton;
 
-    private readonly List<LogData> _logs = new();
+    private readonly List<string> _logs = new();
 
     private void Start()
     {
@@ -24,7 +24,7 @@ public class DevConsoleController : MonoBehaviour
 
             foreach (var log in _logs)
             {
-                data += $"{log.condition}\n{log.stackTrace}\n\n";
+                data += $"{log}\n";
             }
 
             GUIUtility.systemCopyBuffer = data;
@@ -58,13 +58,6 @@ public class DevConsoleController : MonoBehaviour
         txt.SetText(logCond);
         txt.color = type == LogType.Log ? Color.white : Color.red;
 
-        _logs.Add(new LogData { condition = logCond, stackTrace = stackTrace });
-    }
-
-
-    private struct LogData
-    {
-        public string condition;
-        public string stackTrace;
+        _logs.Add(logCond);
     }
 }
