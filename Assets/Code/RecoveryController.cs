@@ -96,11 +96,11 @@ public class RecoveryController : MonoBehaviour
                     _file.WriteFileValue(float.Parse(data[18]));
                     _file.WriteFileValue(int.Parse(data[19]));
                     _file.WriteFileValue(float.Parse(data[20]));
-                    _file.WriteFileValue(float.Parse(data[21]));
+                    _file.WriteFileValue(double.Parse(data[21]));
                     _file.WriteFileValue(double.Parse(data[22]));
-                    _file.WriteFileValue(double.Parse(data[23]));
-                    _file.WriteFileValue(float.Parse(data[24]));
-                    _file.WriteFileValue(int.Parse(data[25]));
+                    _file.WriteFileValue(float.Parse(data[23]));
+                    _file.WriteFileValue(int.Parse(data[24]));
+                    _file.WriteFileValue(float.Parse(data[25]));
 
                     var ignFlags = int.Parse(data[26]);
 
@@ -113,7 +113,7 @@ public class RecoveryController : MonoBehaviour
 
                     _file.EndLine();
 
-                    _kml.AddRecord(double.Parse(data[22]), double.Parse(data[23]), float.Parse(data[21]));
+                    _kml.AddRecord(double.Parse(data[21]), double.Parse(data[22]), float.Parse(data[23]));
 
                     _currentCount++;
 
