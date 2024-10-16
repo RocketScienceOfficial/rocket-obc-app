@@ -73,7 +73,7 @@ public class RecoveryController : MonoBehaviour
                     return;
                 }
 
-                if (data.Count == 27)
+                if (data.Count == 28)
                 {
                     _file.WriteFileValue(uint.Parse(data[0]));
                     _file.WriteFileValue(float.Parse(data[1]));
@@ -111,9 +111,14 @@ public class RecoveryController : MonoBehaviour
                         _file.WriteFileValue(flag);
                     }
 
+                    var gpsData = int.Parse(data[27]);
+
+                    _file.WriteFileValue(gpsData & 0x01);
+                    _file.WriteFileValue(gpsData >> 1);
+
                     _file.EndLine();
 
-                    _kml.AddRecord(double.Parse(data[21]), double.Parse(data[22]), float.Parse(data[23]));
+                    _kml.AddRecord(double.Parse(data[21]), double.Parse(data[22]), float.Parse(data[20]));
 
                     _currentCount++;
 
