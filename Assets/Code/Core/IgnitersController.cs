@@ -40,18 +40,13 @@ public class IgnitersController : MonoBehaviour
         {
             if (_isTestingIgn)
             {
-                var msg = args.Data;
+                var msg = args.Frame;
 
-                if (msg.StartsWith("\\"))
+                if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_IGN_FINISH_TEST)
                 {
-                    var cmd = msg[1..];
+                    _isTestingIgn = false;
 
-                    if (cmd == "ign-test-finish")
-                    {
-                        _isTestingIgn = false;
-
-                        m_LoadingPanel.SetActive(false);
-                    }
+                    m_LoadingPanel.SetActive(false);
                 }
             }
         };
@@ -79,6 +74,13 @@ public class IgnitersController : MonoBehaviour
 
         m_LoadingPanel.SetActive(true);
 
-        SerialCommunication.Instance.SerialPortWrite($"\\ign-test {i}");
+        SerialCommunication.Instance.SerialPortWrite(new DataLinkFrame
+        {
+            msgId = DataLinkMessageType.DATALINK_MESSAGE_IGN_REQUEST_TEST,
+            payload = BytesConverter.GetBytes(new DataLinkFrameIGNRequestTest
+            {
+                ignNum = (byte)i,
+            }),
+        });
     }
 }

@@ -31,7 +31,7 @@ public class ClearController : MonoBehaviour
 
             PanelsManager.Instance.SetPanelActive(PanelType.Clear, true);
         });
-        
+
         m_ConfirmButton.onClick.AddListener(() =>
         {
             m_ConfirmPanel.SetActive(false);
@@ -43,7 +43,10 @@ public class ClearController : MonoBehaviour
 
             UpdateProgress();
 
-            SerialCommunication.Instance.SerialPortWrite("\\data-clear-start");
+            SerialCommunication.Instance.SerialPortWrite(new DataLinkFrame
+            {
+                msgId = DataLinkMessageType.DATALINK_MESSAGE_DATA_REQUEST_CLEAR,
+            });
         });
 
         m_CancelButton.onClick.AddListener(() =>
@@ -55,39 +58,17 @@ public class ClearController : MonoBehaviour
         {
             if (_isClearing)
             {
-                var msg = args.Data;
+                var msg = args.Frame;
 
-                if (msg.StartsWith("\\"))
+                if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_DATA_FINISH_CLEAR)
                 {
-                    var cmd = msg[1..];
-
-                    if (cmd == "data-clear-finish")
-                    {
-                        FinishClearing();
-                    }
+                    FinishClearing();
                 }
-                else if (msg.StartsWith("/*") && msg.EndsWith("*/"))
+                else if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_DATA_PROGRESS_CLEAR)
                 {
-                    msg = msg.Remove(0, 2);
-                    msg = msg.Remove(msg.Length - 2, 2);
+                    var payload = BytesConverter.FromBytes<DataLinkFrameDataProgressClear>(msg.payload);
 
-                    var data = msg.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                    for (var i = 0; i < data.Count; i++)
-                    {
-                        data[i] = data[i].Replace('.', ',');
-                    }
-
-                    if (data.Count == 1)
-                    {
-                        _totalPercentage = float.Parse(data[0]);
-                    }
-                    else
-                    {
-                        print("Invalid data length: " + data.Count);
-
-                        FinishClearing();
-                    }
+                    _totalPercentage = payload.percentage;
                 }
             }
         };

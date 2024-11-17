@@ -23,7 +23,7 @@ public class SerialCommunication : MonoBehaviour
     public bool IsConnected => _currentSerialPort != null;
     public string PortName => _currentSerialPort?.PortName;
 
-    private readonly Queue<string> _serialReadQueue = new();
+    private readonly Queue<DataLinkFrame> _serialReadQueue = new();
     private readonly object _serialReadQueueLock = new();
     private bool _closePort;
     private readonly object _closePortLock = new();
@@ -46,12 +46,7 @@ public class SerialCommunication : MonoBehaviour
         {
             if (_serialReadQueue.Count > 0)
             {
-                var data = _serialReadQueue.Dequeue();
-
-                if (!string.IsNullOrEmpty(data))
-                {
-                    OnRead?.Invoke(this, new SerialCommunicationOnReadEventArgs { Data = data });
-                }
+                OnRead?.Invoke(this, new SerialCommunicationOnReadEventArgs { Frame = _serialReadQueue.Dequeue() });
             }
         }
 
@@ -156,18 +151,42 @@ public class SerialCommunication : MonoBehaviour
 
     private void SerialReadThread()
     {
+        const int BUFFER_SIZE = 512;
+
+        var buffer = new byte[BUFFER_SIZE];
+        var len = 0;
+
         while (IsConnected)
         {
             try
             {
-                var message = _currentSerialPort.ReadLine();
+                var b = (byte)_currentSerialPort.ReadByte();
 
-                if (!string.IsNullOrEmpty(message))
+                if (len >= BUFFER_SIZE)
                 {
-                    lock (_serialReadQueueLock)
+                    len = 0;
+                }
+
+                buffer[len++] = b;
+
+                if (b == 0x00)
+                {
+                    var decodedData = COBS.Decode(buffer, len);
+                    var frame = DataLink.Deserialize(decodedData);
+
+                    if (frame != null)
                     {
-                        _serialReadQueue.Enqueue(message);
+                        lock (_serialReadQueueLock)
+                        {
+                            _serialReadQueue.Enqueue(frame);
+                        }
                     }
+                    else
+                    {
+                        print("Couldn't deserialize frame!");
+                    }
+
+                    len = 0;
                 }
             }
             catch (TimeoutException) { }
@@ -184,13 +203,24 @@ public class SerialCommunication : MonoBehaviour
         }
     }
 
-    public void SerialPortWrite(string data)
+    public void SerialPortWrite(DataLinkFrame frame)
     {
         if (IsConnected)
         {
-            _currentSerialPort.WriteLine(data + "\r");
-            
-            print("Written to serial port: " + data);
+            var bytes = DataLink.Serialize(frame);
+
+            if (bytes == null)
+            {
+                print("Error while serialized frame!");
+
+                return;
+            }
+
+            var encodedBuffer = COBS.Encode(bytes);
+
+            _currentSerialPort.Write(encodedBuffer, 0, encodedBuffer.Length);
+
+            print("Written to serial port " + encodedBuffer.Length + " bytes!");
         }
     }
 
@@ -261,5 +291,5 @@ public class SerialCommunication : MonoBehaviour
 
 public class SerialCommunicationOnReadEventArgs : EventArgs
 {
-    public string Data { get; set; }
+    public DataLinkFrame Frame { get; set; }
 }
