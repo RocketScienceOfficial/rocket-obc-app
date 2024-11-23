@@ -11,9 +11,12 @@ public class IgnitersController : MonoBehaviour
     [SerializeField] private GameObject m_LoadingPanel;
 
     private bool _isTestingIgn;
+    private Watchdog _watchdog;
 
     private void Start()
     {
+        _watchdog = new Watchdog("IgnitersController", 5f, () => SetTestIGN(false));
+
         m_OpenPanelButton.onClick.AddListener(() =>
         {
             m_LoadingPanel.SetActive(false);
@@ -44,9 +47,7 @@ public class IgnitersController : MonoBehaviour
 
                 if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_IGN_FINISH_TEST)
                 {
-                    _isTestingIgn = false;
-
-                    m_LoadingPanel.SetActive(false);
+                    SetTestIGN(false);
                 }
             }
         };
@@ -57,9 +58,7 @@ public class IgnitersController : MonoBehaviour
             {
                 print("Disconnected while testing igniter. Aborting...");
 
-                _isTestingIgn = false;
-
-                m_LoadingPanel.SetActive(false);
+                SetTestIGN(false);
 
                 PanelsManager.Instance.SetPanelActive(PanelType.Igniters, false);
             }
@@ -70,9 +69,7 @@ public class IgnitersController : MonoBehaviour
 
     private void TestIgniter(int i)
     {
-        _isTestingIgn = true;
-
-        m_LoadingPanel.SetActive(true);
+        SetTestIGN(true);
 
         SerialCommunication.Instance.SerialPortWrite(new DataLinkFrame
         {
@@ -82,5 +79,21 @@ public class IgnitersController : MonoBehaviour
                 ignNum = (byte)i,
             }),
         });
+    }
+
+    private void SetTestIGN(bool en)
+    {
+        m_LoadingPanel.SetActive(en);
+
+        _isTestingIgn = en;
+
+        if (en)
+        {
+            _watchdog.Enable();
+        }
+        else
+        {
+            _watchdog.Disable();
+        }
     }
 }

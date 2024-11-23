@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,9 +19,12 @@ public class ClearController : MonoBehaviour
     private bool _isClearing;
     private float _totalPercentage;
     private float _currentProgress;
+    private Watchdog _watchdog;
 
     private void Start()
     {
+        _watchdog = new Watchdog("ClearController", 20f, () => FinishClearing());
+
         m_ClearButton.onClick.AddListener(() =>
         {
             m_ConfirmPanel.SetActive(true);
@@ -40,6 +41,7 @@ public class ClearController : MonoBehaviour
             _isClearing = true;
             _totalPercentage = 0;
             _currentProgress = 0;
+            _watchdog.Enable();
 
             UpdateProgress();
 
@@ -69,6 +71,7 @@ public class ClearController : MonoBehaviour
                     var payload = BytesConverter.FromBytes<DataLinkFrameDataProgressClear>(msg.payload);
 
                     _totalPercentage = payload.percentage;
+                    _watchdog.Update();
                 }
             }
         };
@@ -103,6 +106,7 @@ public class ClearController : MonoBehaviour
         _isClearing = false;
         _totalPercentage = 0;
         _currentProgress = 0;
+        _watchdog.Disable();
 
         PanelsManager.Instance.SetPanelActive(PanelType.Clear, false);
     }

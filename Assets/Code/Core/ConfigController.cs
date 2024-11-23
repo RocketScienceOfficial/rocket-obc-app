@@ -13,9 +13,12 @@ public class ConfigController : MonoBehaviour
     [SerializeField] private GameObject m_LoadingPanel;
 
     private bool _inConfig;
+    private Watchdog _watchdog;
 
     private void Start()
     {
+        _watchdog = new Watchdog("ConfigController", 2f, () => Abort());
+
         m_OpenButton.onClick.AddListener(() =>
         {
             FetchData();
@@ -43,17 +46,13 @@ public class ConfigController : MonoBehaviour
                 {
                     var payload = BytesConverter.FromBytes<DataLinkFrameConfigGet>(msg.payload);
 
-                    m_LoadingPanel.SetActive(false);
-
                     m_MainHeightInputField.text = payload.mainHeight.ToString();
 
-                    _inConfig = false;
+                    SetInConfig(false);
                 }
                 else if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_CONFIG_SET_ACK)
                 {
-                    m_LoadingPanel.SetActive(false);
-
-                    _inConfig = false;
+                    SetInConfig(false);
                 }
             }
         };
@@ -64,18 +63,14 @@ public class ConfigController : MonoBehaviour
             {
                 print("Disconnected while doing config. Aborting...");
 
-                _inConfig = false;
-
-                PanelsManager.Instance.SetPanelActive(PanelType.Config, false);
+                Abort();
             }
         };
     }
 
     private void FetchData()
     {
-        m_LoadingPanel.SetActive(true);
-
-        _inConfig = true;
+        SetInConfig(true);
 
         SerialCommunication.Instance.SerialPortWrite(new DataLinkFrame
         {
@@ -85,9 +80,7 @@ public class ConfigController : MonoBehaviour
 
     private void SaveData()
     {
-        m_LoadingPanel.SetActive(true);
-
-        _inConfig = true;
+        SetInConfig(true);
 
         SerialCommunication.Instance.SerialPortWrite(new DataLinkFrame
         {
@@ -102,5 +95,28 @@ public class ConfigController : MonoBehaviour
     private int GetValue(TMP_InputField inputField)
     {
         return !string.IsNullOrEmpty(inputField.text) ? int.Parse(inputField.text) : 0;
+    }
+
+    private void SetInConfig(bool inConfig)
+    {
+        m_LoadingPanel.SetActive(inConfig);
+
+        _inConfig = inConfig;
+
+        if (inConfig)
+        {
+            _watchdog.Enable();
+        }
+        else
+        {
+            _watchdog.Disable();
+        }
+    }
+
+    private void Abort()
+    {
+        SetInConfig(false);
+
+        PanelsManager.Instance.SetPanelActive(PanelType.Config, false);
     }
 }

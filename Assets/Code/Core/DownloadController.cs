@@ -13,18 +13,22 @@ public class DownloadController : MonoBehaviour
 
     private readonly CSVFile _file = new();
     private readonly KMLFile _kml = new();
+    private Watchdog _watchdog;
     private bool _isDownloading;
     private int _currentCount;
     private int _totalCount;
 
     private void Start()
     {
+        _watchdog = new Watchdog("DownloadController", 1f, () => FinishDownloading());
+
         m_DownloadButton.onClick.AddListener(() =>
         {
             _isDownloading = true;
 
             _file.Open($"Downloads/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
             _kml.Open($"Downloads/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
+            _watchdog.Enable();
 
             UpdateProgress();
 
@@ -87,6 +91,8 @@ public class DownloadController : MonoBehaviour
 
                     _kml.AddRecord(payload.lat, payload.lon, (float)payload.alt);
 
+                    _watchdog.Update();
+
                     _currentCount++;
 
                     UpdateProgress();
@@ -101,6 +107,7 @@ public class DownloadController : MonoBehaviour
                     var payload = BytesConverter.FromBytes<DataLinkFrameDataSavedSize>(msg.payload);
 
                     _totalCount = (int)payload.size;
+                    _watchdog.Update();
 
                     print("New total count is: " + _totalCount);
 
@@ -137,6 +144,7 @@ public class DownloadController : MonoBehaviour
     {
         _file.Close();
         _kml.Close();
+        _watchdog.Disable();
 
         _isDownloading = false;
         _currentCount = 0;

@@ -1,0 +1,3 @@
+[submodule "Packages/communication-utils-unity"]
+	path = Packages/communication-utils-unity
+	url = https://github.com/RocketScienceOfficial/communication-utils-unity.git

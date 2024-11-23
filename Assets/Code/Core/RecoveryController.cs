@@ -12,17 +12,21 @@ public class RecoveryController : MonoBehaviour
 
     private readonly CSVFile _file = new();
     private readonly KMLFile _kml = new();
+    private Watchdog _watchdog;
     private bool _isRecovering;
     private int _currentCount;
 
     private void Start()
     {
+        _watchdog = new Watchdog("RecoveryController", 1f, () => FinishRecovering());
+
         m_RecoveryButton.onClick.AddListener(() =>
         {
             _isRecovering = true;
 
             _file.Open($"Recovery/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
             _kml.Open($"Recovery/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
+            _watchdog.Enable();
 
             UpdateProgress();
 
@@ -85,6 +89,8 @@ public class RecoveryController : MonoBehaviour
 
                     _kml.AddRecord(payload.lat, payload.lon, (float)payload.alt);
 
+                    _watchdog.Update();
+
                     _currentCount++;
 
                     UpdateProgress();
@@ -111,6 +117,7 @@ public class RecoveryController : MonoBehaviour
     {
         _file.Close();
         _kml.Close();
+        _watchdog.Disable();
 
         _isRecovering = false;
         _currentCount = 0;

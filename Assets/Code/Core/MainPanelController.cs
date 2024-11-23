@@ -11,7 +11,7 @@ public class MainPanelController : MonoBehaviour
     {
         SerialCommunication.Instance.OnConnected += (sender, args) =>
         {
-            m_PortText.SetText(SerialCommunication.Instance.PortName);
+            m_PortText.SetText(SerialCommunication.Instance.CurrentPortName());
         };
     }
 }
