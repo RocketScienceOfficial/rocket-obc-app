@@ -8,7 +8,7 @@ public class IgnitersController : MonoBehaviour
     [SerializeField] private Button m_OpenPanelButton;
     [SerializeField] private Button m_ExitButton;
     [SerializeField] private Button[] m_IGNButtons;
-    [SerializeField] private GameObject m_LoadingPanel;
+    [SerializeField] private GameObject m_TestingPanel;
 
     private bool _isTestingIgn;
     private Watchdog _watchdog;
@@ -19,7 +19,7 @@ public class IgnitersController : MonoBehaviour
 
         m_OpenPanelButton.onClick.AddListener(() =>
         {
-            m_LoadingPanel.SetActive(false);
+            m_TestingPanel.SetActive(false);
 
             PanelsManager.Instance.SetPanelActive(PanelType.Igniters, true);
         });
@@ -64,7 +64,7 @@ public class IgnitersController : MonoBehaviour
             }
         };
 
-        m_LoadingPanel.SetActive(false);
+        m_TestingPanel.SetActive(false);
     }
 
     private void TestIgniter(int i)
@@ -83,7 +83,7 @@ public class IgnitersController : MonoBehaviour
 
     private void SetTestIGN(bool en)
     {
-        m_LoadingPanel.SetActive(en);
+        m_TestingPanel.SetActive(en);
 
         _isTestingIgn = en;
 
