@@ -10,6 +10,7 @@ public enum PanelType
     Clear,
     Recovery,
     Config,
+    EKF,
     Igniters,
 }
 
@@ -23,6 +24,7 @@ public class PanelsManager : MonoBehaviour
     [SerializeField] private GameObject m_ClearPanel;
     [SerializeField] private GameObject m_RecoveryPanel;
     [SerializeField] private GameObject m_ConfigPanel;
+    [SerializeField] private GameObject m_EKFPanel;
     [SerializeField] private GameObject m_IgnitersPanel;
 
     private void Awake()
@@ -56,6 +58,7 @@ public class PanelsManager : MonoBehaviour
         SetPanelActive(PanelType.Clear, false);
         SetPanelActive(PanelType.Recovery, false);
         SetPanelActive(PanelType.Config, false);
+        SetPanelActive(PanelType.EKF, false);
         SetPanelActive(PanelType.Igniters, false);
     }
 
@@ -80,6 +83,9 @@ public class PanelsManager : MonoBehaviour
                 break;
             case PanelType.Config:
                 m_ConfigPanel.SetActive(active);
+                break;
+            case PanelType.EKF:
+                m_EKFPanel.SetActive(active);
                 break;
             case PanelType.Igniters:
                 m_IgnitersPanel.SetActive(active);
