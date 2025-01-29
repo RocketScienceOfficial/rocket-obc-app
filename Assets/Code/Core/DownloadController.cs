@@ -11,7 +11,7 @@ public class DownloadController : MonoBehaviour
     [SerializeField] private Image m_ProgressFill;
     [SerializeField] private TextMeshProUGUI m_ProgressText;
 
-    private readonly CSVFile _file = new();
+    private readonly CSVFile _csv = new();
     private readonly KMLFile _kml = new();
     private Watchdog _watchdog;
     private bool _isDownloading;
@@ -26,7 +26,7 @@ public class DownloadController : MonoBehaviour
         {
             _isDownloading = true;
 
-            _file.Open($"Downloads/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
+            _csv.Open($"Downloads/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
             _kml.Open($"Downloads/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
             _watchdog.Enable();
 
@@ -50,37 +50,37 @@ public class DownloadController : MonoBehaviour
                 {
                     var payload = BytesConverter.FromBytes<DataLinkFrameDataSavedChunk>(msg.payload);
 
-                    _file.WriteFileValue(payload.dt);
-                    _file.WriteFileValue(payload.accX);
-                    _file.WriteFileValue(payload.accY);
-                    _file.WriteFileValue(payload.accZ);
-                    _file.WriteFileValue(payload.velN);
-                    _file.WriteFileValue(payload.velE);
-                    _file.WriteFileValue(payload.velD);
-                    _file.WriteFileValue(payload.posN);
-                    _file.WriteFileValue(payload.posE);
-                    _file.WriteFileValue(payload.posD);
-                    _file.WriteFileValue(payload.qw);
-                    _file.WriteFileValue(payload.qx);
-                    _file.WriteFileValue(payload.qy);
-                    _file.WriteFileValue(payload.qz);
-                    _file.WriteFileValue(payload.lat);
-                    _file.WriteFileValue(payload.lon);
-                    _file.WriteFileValue(payload.alt);
-                    _file.WriteFileValue(payload.smState);
-                    _file.WriteFileValue(payload.batVolts10 / 10.0f);
+                    _csv.WriteFileValue(payload.dt);
+                    _csv.WriteFileValue(payload.accX);
+                    _csv.WriteFileValue(payload.accY);
+                    _csv.WriteFileValue(payload.accZ);
+                    _csv.WriteFileValue(payload.velN);
+                    _csv.WriteFileValue(payload.velE);
+                    _csv.WriteFileValue(payload.velD);
+                    _csv.WriteFileValue(payload.posN);
+                    _csv.WriteFileValue(payload.posE);
+                    _csv.WriteFileValue(payload.posD);
+                    _csv.WriteFileValue(payload.qw);
+                    _csv.WriteFileValue(payload.qx);
+                    _csv.WriteFileValue(payload.qy);
+                    _csv.WriteFileValue(payload.qz);
+                    _csv.WriteFileValue(payload.lat);
+                    _csv.WriteFileValue(payload.lon);
+                    _csv.WriteFileValue(payload.alt);
+                    _csv.WriteFileValue(payload.smState);
+                    _csv.WriteFileValue(payload.batVolts10 / 10.0f);
 
                     for (int i = 0; i < 8; i++)
                     {
                         var flag = (payload.ignFlags & (1 << i)) >> i;
 
-                        _file.WriteFileValue(flag);
+                        _csv.WriteFileValue(flag);
                     }
 
-                    _file.WriteFileValue(payload.gpsData & 0x01);
-                    _file.WriteFileValue(payload.gpsData >> 1);
+                    _csv.WriteFileValue(payload.gpsData & 0x01);
+                    _csv.WriteFileValue(payload.gpsData >> 1);
 
-                    _file.EndLine();
+                    _csv.EndLine();
 
                     _kml.AddRecord(payload.lat, payload.lon, (float)payload.alt);
 
@@ -135,7 +135,7 @@ public class DownloadController : MonoBehaviour
 
     private void FinishDownloading()
     {
-        _file.Close();
+        _csv.Close();
         _kml.Close();
         _watchdog.Disable();
 

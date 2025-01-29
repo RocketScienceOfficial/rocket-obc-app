@@ -14,6 +14,8 @@ public class KMLFile
         EnsureDirectoryExists(path);
 
         _writer = new StreamWriter(path);
+
+        Debug.Log($"{path} has been opened!");
     }
 
     public void Close()
@@ -26,6 +28,8 @@ public class KMLFile
         _writer.Write(newKml);
         _writer.Close();
         _writer = null;
+
+        Debug.Log($"File has been closed");
     }
 
     public void AddRecord(double lat, double lon, float alt)
