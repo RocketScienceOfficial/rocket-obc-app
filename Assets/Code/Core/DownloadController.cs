@@ -49,7 +49,8 @@ public class DownloadController : MonoBehaviour
                 if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_DATA_SAVED_CHUNK)
                 {
                     var payload = BytesConverter.FromBytes<DataLinkFrameDataSavedChunk>(msg.payload);
-
+                    var quat = new Quaternion(payload.qx, payload.qy, payload.qz, payload.qw);
+                    
                     _csv.WriteFileValue(payload.dt);
                     _csv.WriteFileValue(payload.accX);
                     _csv.WriteFileValue(payload.accY);
@@ -60,10 +61,9 @@ public class DownloadController : MonoBehaviour
                     _csv.WriteFileValue(payload.posN);
                     _csv.WriteFileValue(payload.posE);
                     _csv.WriteFileValue(payload.posD);
-                    _csv.WriteFileValue(payload.qw);
-                    _csv.WriteFileValue(payload.qx);
-                    _csv.WriteFileValue(payload.qy);
-                    _csv.WriteFileValue(payload.qz);
+                    _csv.WriteFileValue(quat.eulerAngles.x);
+                    _csv.WriteFileValue(quat.eulerAngles.y);
+                    _csv.WriteFileValue(quat.eulerAngles.z);
                     _csv.WriteFileValue(payload.lat);
                     _csv.WriteFileValue(payload.lon);
                     _csv.WriteFileValue(payload.alt);
