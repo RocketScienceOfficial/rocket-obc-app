@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class ConfigController : MonoBehaviour
 {
     [SerializeField] private TMP_InputField m_MainHeightInputField;
+    [SerializeField] private TMP_InputField m_EmergencySpeedInputField;
     [SerializeField] private Button m_OpenButton;
     [SerializeField] private Button m_ExitButton;
     [SerializeField] private Button m_SaveButton;
@@ -47,6 +48,7 @@ public class ConfigController : MonoBehaviour
                     var payload = BytesConverter.FromBytes<DataLinkFrameConfigGet>(msg.payload);
 
                     m_MainHeightInputField.text = payload.mainHeight.ToString();
+                    m_EmergencySpeedInputField.text = payload.emergencySpeed.ToString();
 
                     SetInConfig(false);
                 }
@@ -88,6 +90,7 @@ public class ConfigController : MonoBehaviour
             payload = BytesConverter.GetBytes(new DataLinkFrameConfigSet
             {
                 mainHeight = (ushort)GetValue(m_MainHeightInputField),
+                emergencySpeed = (byte)GetValue(m_EmergencySpeedInputField),
             })
         });
     }
