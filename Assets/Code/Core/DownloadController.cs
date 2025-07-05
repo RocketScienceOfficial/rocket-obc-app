@@ -68,7 +68,7 @@ public class DownloadController : MonoBehaviour
                     _csv.WriteFileValue(payload.lon);
                     _csv.WriteFileValue(payload.alt);
                     _csv.WriteFileValue(payload.smState);
-                    _csv.WriteFileValue(payload.batVolts10 / 10.0f);
+                    _csv.WriteFileValue(payload.batteryVoltage100 / 100.0f);
 
                     for (int i = 0; i < 8; i++)
                     {
