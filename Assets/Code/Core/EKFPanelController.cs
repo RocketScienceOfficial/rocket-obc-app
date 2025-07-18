@@ -81,10 +81,10 @@ public class EKFPanelController : MonoBehaviour
                     m_GForceText.SetText($"{string.Format("{0:F1}", Mathf.RoundToInt(Mathf.Sqrt(payload.accelerationN * payload.accelerationN + payload.accelerationE * payload.accelerationE + (payload.accelerationD + G) * (payload.accelerationD + G)) / G * 10.0f) / 10.0f)} G");
 
                     m_OrientationRenderObject.localRotation = new Quaternion(payload.qx, payload.qy, payload.qz, payload.qw);
-
-                    m_OrientationRollText.SetText($"{Mathf.RoundToInt(m_OrientationRenderObject.eulerAngles.x)}");
-                    m_OrientationPitchText.SetText($"{Mathf.RoundToInt(m_OrientationRenderObject.eulerAngles.y)}");
-                    m_OrientationYawText.SetText($"{Mathf.RoundToInt(m_OrientationRenderObject.eulerAngles.z)}");
+                    
+                    m_OrientationRollText.SetText($"{Mathf.RoundToInt(m_OrientationRenderObject.localEulerAngles.x)}");
+                    m_OrientationPitchText.SetText($"{Mathf.RoundToInt(m_OrientationRenderObject.localEulerAngles.y)}");
+                    m_OrientationYawText.SetText($"{Mathf.RoundToInt(m_OrientationRenderObject.localEulerAngles.z)}");
                 }
             }
         };
