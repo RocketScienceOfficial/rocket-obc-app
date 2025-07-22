@@ -26,10 +26,11 @@ public class DownloadController : MonoBehaviour
         {
             _isDownloading = true;
 
-            _csv.Open($"Downloads/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
-            _kml.Open($"Downloads/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
+            _csv.Open($"Downloads/FlightLog_{DateTime.Now:yyyy-MM-dd--HH-mm-ss}.csv");
+            _kml.Open($"Downloads/FlightKML_{DateTime.Now:yyyy-MM-dd--HH-mm-ss}.kml");
             _watchdog.Enable();
 
+            WriteCSVHeader(_csv);
             UpdateProgress();
 
             PanelsManager.Instance.SetPanelActive(PanelType.Download, true);
@@ -48,43 +49,7 @@ public class DownloadController : MonoBehaviour
 
                 if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_DATA_SAVED_CHUNK)
                 {
-                    var payload = BytesConverter.FromBytes<DataLinkFrameDataSavedChunk>(msg.payload);
-                    var quat = new Quaternion(payload.qx, payload.qy, payload.qz, payload.qw);
-                    
-                    _csv.WriteFileValue(payload.dt);
-                    _csv.WriteFileValue(payload.accX);
-                    _csv.WriteFileValue(payload.accY);
-                    _csv.WriteFileValue(payload.accZ);
-                    _csv.WriteFileValue(payload.velN);
-                    _csv.WriteFileValue(payload.velE);
-                    _csv.WriteFileValue(payload.velD);
-                    _csv.WriteFileValue(payload.posN);
-                    _csv.WriteFileValue(payload.posE);
-                    _csv.WriteFileValue(payload.posD);
-                    _csv.WriteFileValue(quat.eulerAngles.x);
-                    _csv.WriteFileValue(quat.eulerAngles.y);
-                    _csv.WriteFileValue(quat.eulerAngles.z);
-                    _csv.WriteFileValue(payload.lat);
-                    _csv.WriteFileValue(payload.lon);
-                    _csv.WriteFileValue(payload.alt);
-                    _csv.WriteFileValue(payload.smState);
-                    _csv.WriteFileValue(payload.batteryVoltage100 / 100.0f);
-
-                    for (int i = 0; i < 8; i++)
-                    {
-                        var flag = (payload.ignFlags & (1 << i)) >> i;
-
-                        _csv.WriteFileValue(flag);
-                    }
-
-                    _csv.WriteFileValue(payload.gpsData & 0x01);
-                    _csv.WriteFileValue(payload.gpsData >> 1);
-
-                    _csv.EndLine();
-
-                    _kml.AddRecord(payload.lat, payload.lon, (float)payload.alt);
-
-                    _watchdog.Update();
+                    ProcessFrame(msg, _csv, _kml, _watchdog);
 
                     _currentCount++;
 
@@ -152,5 +117,80 @@ public class DownloadController : MonoBehaviour
     {
         m_ProgressFill.fillAmount = _isDownloading ? (float)_currentCount / Mathf.Max(_totalCount, 1) : 0;
         m_ProgressText.SetText(_totalCount != 0 ? $"{_currentCount} / {_totalCount}" : "Loading...");
+    }
+
+    public static void WriteCSVHeader(CSVFile csv)
+    {
+        csv.WriteString("dt");
+        csv.WriteString("acc_x");
+        csv.WriteString("acc_y");
+        csv.WriteString("acc_z");
+        csv.WriteString("vel_N");
+        csv.WriteString("vel_E");
+        csv.WriteString("vel_D");
+        csv.WriteString("pos_N");
+        csv.WriteString("pos_E");
+        csv.WriteString("pos_D");
+        csv.WriteString("rot_x");
+        csv.WriteString("rot_y");
+        csv.WriteString("rot_z");
+        csv.WriteString("lat");
+        csv.WriteString("lon");
+        csv.WriteString("alt");
+        csv.WriteString("pressure");
+        csv.WriteString("state");
+        csv.WriteString("battery");
+        csv.WriteString("ign1_cont");
+        csv.WriteString("ign2_cont");
+        csv.WriteString("ign3_cont");
+        csv.WriteString("ign4_cont");
+        csv.WriteString("ign1_state");
+        csv.WriteString("ign2_state");
+        csv.WriteString("ign3_state");
+        csv.WriteString("ign4_state");
+        csv.WriteString("gps_fix");
+        csv.WriteString("gps_sats");
+    }
+
+    public static void ProcessFrame(DataLinkFrame msg, CSVFile csv, KMLFile kml, Watchdog watchdog)
+    {
+        var payload = BytesConverter.FromBytes<DataLinkFrameDataSavedChunk>(msg.payload);
+        var quat = new Quaternion(payload.qx, payload.qy, payload.qz, payload.qw);
+
+        csv.WriteFileValue(payload.dt);
+        csv.WriteFileValue(payload.accX);
+        csv.WriteFileValue(payload.accY);
+        csv.WriteFileValue(payload.accZ);
+        csv.WriteFileValue(payload.velN);
+        csv.WriteFileValue(payload.velE);
+        csv.WriteFileValue(payload.velD);
+        csv.WriteFileValue(payload.posN);
+        csv.WriteFileValue(payload.posE);
+        csv.WriteFileValue(payload.posD);
+        csv.WriteFileValue(quat.eulerAngles.x);
+        csv.WriteFileValue(quat.eulerAngles.y);
+        csv.WriteFileValue(quat.eulerAngles.z);
+        csv.WriteFileValue(payload.lat);
+        csv.WriteFileValue(payload.lon);
+        csv.WriteFileValue(payload.alt);
+        csv.WriteFileValue(payload.pressure);
+        csv.WriteFileValue(payload.smState);
+        csv.WriteFileValue(payload.batteryVoltage100 / 100.0f);
+
+        for (int i = 0; i < 8; i++)
+        {
+            var flag = (payload.ignFlags & (1 << i)) >> i;
+
+            csv.WriteFileValue(flag);
+        }
+
+        csv.WriteFileValue(payload.gpsData & 0x01);
+        csv.WriteFileValue(payload.gpsData >> 1);
+
+        csv.EndLine();
+
+        kml.AddRecord(payload.lat, payload.lon, (float)payload.alt);
+
+        watchdog.Update();
     }
 }

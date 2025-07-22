@@ -26,6 +26,12 @@ public class CSVFile
         Debug.Log($"File has been closed!");
     }
 
+    public void WriteString(string str)
+    {
+        _csvBuilder.Append(str);
+        _csvBuilder.Append(',');
+    }
+
     public void WriteFileValue<T>(T value) where T : IComparable, IFormattable, IConvertible, IComparable<T>, IEquatable<T>
     {
         _csvBuilder.Append(value.ToString().Replace(',', '.'));

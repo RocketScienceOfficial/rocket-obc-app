@@ -24,10 +24,11 @@ public class RecoveryController : MonoBehaviour
         {
             _isRecovering = true;
 
-            _csv.Open($"Recovery/FlightLog_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.csv");
-            _kml.Open($"Recovery/FlightKML_{DateTime.Now:yyyy-dd-MM--HH-mm-ss}.kml");
+            _csv.Open($"Recovery/FlightLog_{DateTime.Now:yyyy-MM-dd--HH-mm-ss}.csv");
+            _kml.Open($"Recovery/FlightKML_{DateTime.Now:yyyy-MM-dd--HH-mm-ss}.kml");
             _watchdog.Enable();
 
+            DownloadController.WriteCSVHeader(_csv);
             UpdateProgress();
 
             PanelsManager.Instance.SetPanelActive(PanelType.Recovery, true);
@@ -46,43 +47,7 @@ public class RecoveryController : MonoBehaviour
                 
                 if (msg.msgId == DataLinkMessageType.DATALINK_MESSAGE_DATA_SAVED_CHUNK)
                 {
-                    var payload = BytesConverter.FromBytes<DataLinkFrameDataSavedChunk>(msg.payload);
-                    var quat = new Quaternion(payload.qx, payload.qy, payload.qz, payload.qw);
-
-                    _csv.WriteFileValue(payload.dt);
-                    _csv.WriteFileValue(payload.accX);
-                    _csv.WriteFileValue(payload.accY);
-                    _csv.WriteFileValue(payload.accZ);
-                    _csv.WriteFileValue(payload.velN);
-                    _csv.WriteFileValue(payload.velE);
-                    _csv.WriteFileValue(payload.velD);
-                    _csv.WriteFileValue(payload.posN);
-                    _csv.WriteFileValue(payload.posE);
-                    _csv.WriteFileValue(payload.posD);
-                    _csv.WriteFileValue(quat.eulerAngles.x);
-                    _csv.WriteFileValue(quat.eulerAngles.y);
-                    _csv.WriteFileValue(quat.eulerAngles.z);
-                    _csv.WriteFileValue(payload.lat);
-                    _csv.WriteFileValue(payload.lon);
-                    _csv.WriteFileValue(payload.alt);
-                    _csv.WriteFileValue(payload.smState);
-                    _csv.WriteFileValue(payload.batteryVoltage100 / 100.0f);
-
-                    for (int i = 0; i < 8; i++)
-                    {
-                        var flag = (payload.ignFlags & (1 << i)) >> i;
-
-                        _csv.WriteFileValue(flag);
-                    }
-
-                    _csv.WriteFileValue(payload.gpsData & 0x01);
-                    _csv.WriteFileValue(payload.gpsData >> 1);
-
-                    _csv.EndLine();
-
-                    _kml.AddRecord(payload.lat, payload.lon, (float)payload.alt);
-
-                    _watchdog.Update();
+                    DownloadController.ProcessFrame(msg, _csv, _kml, _watchdog);
 
                     _currentCount++;
 
