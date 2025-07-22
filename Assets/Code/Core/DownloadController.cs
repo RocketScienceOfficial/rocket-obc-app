@@ -150,6 +150,8 @@ public class DownloadController : MonoBehaviour
         csv.WriteString("ign4_state");
         csv.WriteString("gps_fix");
         csv.WriteString("gps_sats");
+
+        csv.EndLine();
     }
 
     public static void ProcessFrame(DataLinkFrame msg, CSVFile csv, KMLFile kml, Watchdog watchdog)
