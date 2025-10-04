@@ -122,9 +122,24 @@ public class DownloadController : MonoBehaviour
     public static void WriteCSVHeader(CSVFile csv)
     {
         csv.WriteString("dt");
-        csv.WriteString("acc_x");
-        csv.WriteString("acc_y");
-        csv.WriteString("acc_z");
+        csv.WriteString("acc_rawX");
+        csv.WriteString("acc_rawY");
+        csv.WriteString("acc_rawZ");
+        csv.WriteString("gyro_rawX");
+        csv.WriteString("gyro_rawY");
+        csv.WriteString("gyro_rawZ");
+        csv.WriteString("mag_rawX");
+        csv.WriteString("mag_rawY");
+        csv.WriteString("mag_rawZ");
+        csv.WriteString("lat");
+        csv.WriteString("lon");
+        csv.WriteString("alt");
+        csv.WriteString("gps_fix");
+        csv.WriteString("gps_sats");
+        csv.WriteString("pressure");
+        csv.WriteString("acc_N");
+        csv.WriteString("acc_E");
+        csv.WriteString("acc_D");
         csv.WriteString("vel_N");
         csv.WriteString("vel_E");
         csv.WriteString("vel_D");
@@ -134,22 +149,16 @@ public class DownloadController : MonoBehaviour
         csv.WriteString("rot_x");
         csv.WriteString("rot_y");
         csv.WriteString("rot_z");
-        csv.WriteString("lat");
-        csv.WriteString("lon");
-        csv.WriteString("alt");
-        csv.WriteString("pressure");
         csv.WriteString("state");
         csv.WriteString("battery");
         csv.WriteString("ign1_cont");
         csv.WriteString("ign2_cont");
         csv.WriteString("ign3_cont");
         csv.WriteString("ign4_cont");
-        csv.WriteString("ign1_state");
-        csv.WriteString("ign2_state");
-        csv.WriteString("ign3_state");
-        csv.WriteString("ign4_state");
-        csv.WriteString("gps_fix");
-        csv.WriteString("gps_sats");
+        csv.WriteString("ign1_fired");
+        csv.WriteString("ign2_fired");
+        csv.WriteString("ign3_fired");
+        csv.WriteString("ign4_fired");
 
         csv.EndLine();
     }
@@ -160,9 +169,24 @@ public class DownloadController : MonoBehaviour
         var quat = new Quaternion(payload.qx, payload.qy, payload.qz, payload.qw);
 
         csv.WriteFileValue(payload.dt);
-        csv.WriteFileValue(payload.accX);
-        csv.WriteFileValue(payload.accY);
-        csv.WriteFileValue(payload.accZ);
+        csv.WriteFileValue(payload.accRawX);
+        csv.WriteFileValue(payload.accRawY);
+        csv.WriteFileValue(payload.accRawZ);
+        csv.WriteFileValue(payload.gyroRawX);
+        csv.WriteFileValue(payload.gyroRawY);
+        csv.WriteFileValue(payload.gyroRawZ);
+        csv.WriteFileValue(payload.magRawX);
+        csv.WriteFileValue(payload.magRawY);
+        csv.WriteFileValue(payload.magRawZ);
+        csv.WriteFileValue(payload.lat);
+        csv.WriteFileValue(payload.lon);
+        csv.WriteFileValue(payload.alt);
+        csv.WriteFileValue(payload.gpsData & 0x01);
+        csv.WriteFileValue(payload.gpsData >> 1);
+        csv.WriteFileValue(payload.pressure);
+        csv.WriteFileValue(payload.accN);
+        csv.WriteFileValue(payload.accE);
+        csv.WriteFileValue(payload.accD);
         csv.WriteFileValue(payload.velN);
         csv.WriteFileValue(payload.velE);
         csv.WriteFileValue(payload.velD);
@@ -172,10 +196,6 @@ public class DownloadController : MonoBehaviour
         csv.WriteFileValue(quat.eulerAngles.x);
         csv.WriteFileValue(quat.eulerAngles.y);
         csv.WriteFileValue(quat.eulerAngles.z);
-        csv.WriteFileValue(payload.lat);
-        csv.WriteFileValue(payload.lon);
-        csv.WriteFileValue(payload.alt);
-        csv.WriteFileValue(payload.pressure);
         csv.WriteFileValue(payload.smState);
         csv.WriteFileValue(payload.batteryVoltage100 / 100.0f);
 
@@ -185,9 +205,6 @@ public class DownloadController : MonoBehaviour
 
             csv.WriteFileValue(flag);
         }
-
-        csv.WriteFileValue(payload.gpsData & 0x01);
-        csv.WriteFileValue(payload.gpsData >> 1);
 
         csv.EndLine();
 
