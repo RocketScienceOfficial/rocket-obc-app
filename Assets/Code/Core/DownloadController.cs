@@ -115,7 +115,7 @@ public class DownloadController : MonoBehaviour
 
     private void UpdateProgress()
     {
-        m_ProgressFill.fillAmount = _isDownloading ? (float)_currentCount / Mathf.Max(_totalCount, 1) : 0;
+        m_ProgressFill.fillAmount = _isDownloading && _totalCount > 0 ? (float)_currentCount / _totalCount : 0;
         m_ProgressText.SetText(_totalCount != 0 ? $"{_currentCount} / {_totalCount}" : "Loading...");
     }
 
